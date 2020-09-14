@@ -14,3 +14,8 @@ npm install <package>
 ```
 node <your_js_file>
 ```
+
+## Docs
+
+![title](images/page.png)
+![title](images/postman.png)
