@@ -1,71 +1,34 @@
-const http = require('http')
 const path = require('path')
-const fs = require('fs')
-const moment = require('moment')
-const { calculateVat, sayHello} = require('./utils')
+const express = require('express')
+const hbs = require('express-handlebars')
 
 
-function getPage(page) {
-    const filePath = path.join(__dirname, page)
-    return fs.readFileSync(filePath)
-}
+const restaurantsRouter = require('./routes/restaurants')
+const IndexRouter = require('./routes')
 
 
-function handleFiles(req, res) {
-    const fileType = path.extname(req.url) || '.html'
+const logger = require('./middleware/logger')
 
-    if (fileType == '.html') {
-        res.setHeader('Content-Type', 'text/html')
-        res.writeHead(200)
+const app = express()
 
-        if (req.url == '/') {
-            res.write(getPage('index.html'))
-        } else {
-            res.write(getPage(`${req.url}.html`))
-        }
-        res.end()
-    } else if (fileType == '.css') {
-        res.setHeader('Content-Type', 'text/css')
-        res.writeHead(200)
-        res.write(getPage(req.url))
-        res.end()
+// template engines
+app.engine('hbs', hbs({extname : 'hbs'}))
+app.set('view engine', 'hbs')
 
-    } else {
-        res.writeHead(404)
-        res.end()
-    }
+// middlesware
+app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.json())
+app.use(express.urlencoded({extended : false}))
 
-}
+// custom middleware 
+app.use(logger)
 
-function getData(url) {
-    let data;
-    if (url == '/api/v1/users') {
-        data = [{ name: "bozz" }, { skill: "noob" }]
-    } else if (url == '/api/v1/posts') {
-        data = [{
-            title: "Bozz",
-            date: moment().startOf('day').fromNow()
-        }]
-    }
-    return data
-}
 
-function handleAPI(req, res) {
-    let data = getData(req.url);
-    if (data) {
-        res.setHeader('Content-Type','application/json')
-        res.write(JSON.stringify(data))
-    } else {
-        res.writeHead(404)
-    }
-}
+// routes
+app.use('/api/restaurants', restaurantsRouter)
+app.use('/', IndexRouter)
 
-http
-    .createServer((req, res) => {
-        if (req.url.startsWith('/api')) {
-            handleAPI(req, res)
-        } else {
-            handleFiles(req, res)
-        }
-    })
-    .listen(3000)
+
+app.listen(3000, () => {
+    console.log('listen port 3000')
+})
