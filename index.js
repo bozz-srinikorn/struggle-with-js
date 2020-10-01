@@ -32,3 +32,5 @@ app.use('/', IndexRouter)
 app.listen(3000, () => {
     console.log('listen port 3000')
 })
+
+module.exports = app
