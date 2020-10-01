@@ -10,4 +10,9 @@ router.get('/', (req, res) => {
     })
 })
 
+router.get('/:name', (req, res) => {
+    res.json(`hello ${req.params.name}`)
+})
+
+
 module.exports = router
